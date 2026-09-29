@@ -40,7 +40,7 @@ public final class SystemTtsBridge {
         if (engine != null) return;
         synchronized (lock) {
             if (engine != null) return;
-            Context context = com.waze.lx.a();
+            Context context = applicationContext();
             if (context == null) return;
             engine = new TextToSpeech(context.getApplicationContext(), status -> {
                 ready = status == TextToSpeech.SUCCESS;
@@ -48,6 +48,16 @@ public final class SystemTtsBridge {
                 queuedKey = null;
                 if (ready && key != null) speak(key);
             });
+        }
+    }
+
+    private static Context applicationContext() {
+        try {
+            Class<?> activityThread = Class.forName("android.app.ActivityThread");
+            Object application = activityThread.getMethod("currentApplication").invoke(null);
+            return application instanceof Context ? (Context) application : null;
+        } catch (Throwable ignored) {
+            return null;
         }
     }
 }
