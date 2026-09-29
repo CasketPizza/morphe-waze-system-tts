@@ -36,6 +36,15 @@ public final class SystemTtsBridge {
         }
     }
 
+    public static void speakText(String text) {
+        if (text == null || text.length() == 0) return;
+        ensureEngine();
+        TextToSpeech current = engine;
+        if (current != null && ready) {
+            current.speak(text, TextToSpeech.QUEUE_FLUSH, null, "waze-direct-tts");
+        }
+    }
+
     private static void ensureEngine() {
         if (engine != null) return;
         synchronized (lock) {

@@ -26,3 +26,11 @@ object LegacyTtsPlayFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf("Ljava/lang/String;", "Z")
 )
+
+object LegacyTtsActualFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/sound/lf;",
+    name = "playActual",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Z", "Lh/g/a/l;")
+)

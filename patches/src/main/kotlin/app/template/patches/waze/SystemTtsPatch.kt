@@ -35,7 +35,14 @@ val systemTtsPatch = bytecodePatch(
         LegacyTtsPlayFingerprint.method.addInstructions(
             0,
             """
-                invoke-static {p1}, $BRIDGE->speak(Ljava/lang/String;)V
+                invoke-static {p1}, $BRIDGE->speakText(Ljava/lang/String;)V
+                return-void
+            """
+        )
+        LegacyTtsActualFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {p1}, $BRIDGE->speakText(Ljava/lang/String;)V
                 return-void
             """
         )
