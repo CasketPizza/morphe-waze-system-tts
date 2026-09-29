@@ -15,7 +15,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,6 +33,9 @@ public final class SystemTtsBridge {
     private static final AtomicInteger IDS = new AtomicInteger();
     private static final ThreadLocal<Boolean> BYPASS = new ThreadLocal<>();
     private static volatile Context context;
+    private static volatile Object soundPlayer;
+    private static volatile PromptTextCatalog promptCatalog;
+    private static volatile String lastUnmatched = "none";
     private static TextToSpeech engine;
     private static boolean ready;
     private static int generation;
@@ -38,6 +44,13 @@ public final class SystemTtsBridge {
     private SystemTtsBridge() {}
 
     public static void initialize(Context value) { context = value.getApplicationContext(); }
+
+    public static void attachPlayer(Object value) { soundPlayer = value; }
+
+    public static boolean needsText(String key) {
+        if (!enabled() || Boolean.TRUE.equals(BYPASS.get())) return false;
+        synchronized (TEXT) { return !TEXT.containsKey(key); }
+    }
 
     private static boolean enabled() {
         return context != null && context.getSharedPreferences("system_tts", 0).getBoolean("enabled", false);
@@ -52,10 +65,59 @@ public final class SystemTtsBridge {
         if (!enabled() || Boolean.TRUE.equals(BYPASS.get())) return false;
         String text;
         synchronized (TEXT) { text = TEXT.get(url); if (text == null) text = TEXT.get(key); }
-        if (text == null) { status = "Unmatched audio: using Waze voice"; return false; }
-        final String spokenText = text;
+        if (text == null) { status = "Unmatched URL audio: using Waze voice"; return false; }
+        return enqueue(player, url, key, callback, text, 0, false, false, null);
+    }
+
+    public static boolean playFile(Object player, String path, String stats, boolean ignoreMute,
+            boolean ignoreHardMute, Object callback) {
+        if (!enabled() || Boolean.TRUE.equals(BYPASS.get())) return false;
+        String text;
+        synchronized (TEXT) { text = TEXT.get(path); }
+        if (text == null) {
+            try {
+                if (promptCatalog == null) {
+                    try (InputStreamReader reader = new InputStreamReader(
+                            context.getAssets().open("res/key_value_tts_strings.txt"), StandardCharsets.UTF_8)) {
+                        promptCatalog = new PromptTextCatalog(reader);
+                    }
+                }
+                text = promptCatalog.resolve(path);
+            } catch (Exception error) { Log.e("WazeSystemTTS", "Cannot load prompt phrases", error); }
+        }
+        if (text == null) {
+            lastUnmatched = new File(path).getName();
+            return false;
+        }
+        return enqueue(player, path, stats, callback, text, 1, ignoreMute, ignoreHardMute, null);
+    }
+
+    public static boolean playCached(Object manager, String key, boolean ignoreHardMute) {
+        if (!enabled() || soundPlayer == null || Boolean.TRUE.equals(BYPASS.get())) return false;
+        String text;
+        synchronized (TEXT) { text = TEXT.get(key); }
+        if (text == null) return false;
+        try {
+            Class<?> callbackType = Class.forName("h.g.a.a");
+            Object callback = Proxy.newProxyInstance(callbackType.getClassLoader(), new Class<?>[]{callbackType},
+                    (proxy, method, args) -> {
+                        if (method.getName().equals("hashCode")) return System.identityHashCode(proxy);
+                        if (method.getName().equals("equals")) return proxy == args[0];
+                        if (method.getName().equals("toString")) return "System TTS completion";
+                        return null;
+                    });
+            return enqueue(soundPlayer, key, null, callback, text, 2, false, ignoreHardMute, manager);
+        } catch (Exception error) {
+            Log.e("WazeSystemTTS", "Cannot route cached TTS", error);
+            return false;
+        }
+    }
+
+    private static boolean enqueue(Object player, String url, String key, Object callback, String text,
+            int kind, boolean ignoreMute, boolean ignoreHardMute, Object manager) {
         MAIN.post(() -> {
-            Pending pending = new Pending(player, url, key, callback, spokenText, generation);
+            Pending pending = new Pending(player, url, key, callback, text, generation,
+                    kind, ignoreMute, ignoreHardMute, manager);
             JOBS.put(pending.id, pending);
             ensureEngine();
             if (ready) synthesize(pending);
@@ -99,8 +161,13 @@ public final class SystemTtsBridge {
             if (success && enabled() && pending.file.length() > 44) {
                 Method method = pending.player.getClass().getMethod("c", String.class, String.class,
                         boolean.class, boolean.class, callbackType);
-                method.invoke(pending.player, pending.file.getAbsolutePath(), null, false, false, pending.callback);
-                status = "Navigation audio replaced using " + engine.getDefaultEngine();
+                BYPASS.set(true);
+                try {
+                    method.invoke(pending.player, pending.file.getAbsolutePath(),
+                            pending.kind == 1 ? pending.key : null,
+                            pending.ignoreMute, pending.ignoreHardMute, pending.callback);
+                } finally { BYPASS.remove(); }
+                status = (pending.kind == 0 ? "Navigation" : "Prompt / alert") + " audio replaced using " + engine.getDefaultEngine();
                 MAIN.postDelayed(() -> pending.file.delete(), 300000);
             } else {
                 status = "System synthesis failed or timed out; using Waze voice";
@@ -117,8 +184,16 @@ public final class SystemTtsBridge {
     private static void original(Pending pending, Class<?> callbackType) throws Exception {
         BYPASS.set(true);
         try {
-            pending.player.getClass().getMethod("g", String.class, String.class, callbackType)
-                    .invoke(pending.player, pending.url, pending.key, pending.callback);
+            if (pending.kind == 0) {
+                pending.player.getClass().getMethod("g", String.class, String.class, callbackType)
+                        .invoke(pending.player, pending.url, pending.key, pending.callback);
+            } else if (pending.kind == 1) {
+                pending.player.getClass().getMethod("c", String.class, String.class, boolean.class, boolean.class, callbackType)
+                        .invoke(pending.player, pending.url, pending.key, pending.ignoreMute, pending.ignoreHardMute, pending.callback);
+            } else {
+                pending.manager.getClass().getMethod("play", String.class, boolean.class)
+                        .invoke(pending.manager, pending.url, pending.ignoreHardMute);
+            }
         } finally { BYPASS.remove(); pending.file.delete(); }
     }
 
@@ -167,7 +242,7 @@ public final class SystemTtsBridge {
     private static void showSettings(Activity activity) {
         new AlertDialog.Builder(activity)
                     .setTitle("Android system TTS")
-                    .setMultiChoiceItems(new String[]{"Use system voice for navigation"}, new boolean[]{enabled()},
+                    .setMultiChoiceItems(new String[]{"Use system voice for navigation and alerts"}, new boolean[]{enabled()},
                             (dialog, which, checked) -> {
                                 context.getSharedPreferences("system_tts", 0).edit().putBoolean("enabled", checked).apply();
                         cancel();
@@ -177,7 +252,8 @@ public final class SystemTtsBridge {
                         MAIN.postDelayed(() -> {
                             if (ready) engine.speak("In two hundred metres, turn left onto George Street.",
                                     TextToSpeech.QUEUE_FLUSH, null, "test");
-                            new AlertDialog.Builder(activity).setTitle("System TTS status").setMessage(status)
+                            new AlertDialog.Builder(activity).setTitle("System TTS status")
+                                    .setMessage(status + "\nLast unmatched file (may be a sound effect): " + lastUnmatched)
                                     .setPositiveButton("OK", null).show();
                         }, 1500);
                     })
@@ -190,14 +266,18 @@ public final class SystemTtsBridge {
 
     private static final class Pending {
         final String id = "waze-system-" + IDS.incrementAndGet();
-        final Object player, callback;
+        final Object player, callback, manager;
         final String url, key, text;
         final int generation;
+        final int kind;
+        final boolean ignoreMute, ignoreHardMute;
         final File file;
         boolean started;
-        Pending(Object player, String url, String key, Object callback, String text, int generation) {
+        Pending(Object player, String url, String key, Object callback, String text, int generation,
+                int kind, boolean ignoreMute, boolean ignoreHardMute, Object manager) {
             this.player = player; this.url = url; this.key = key; this.callback = callback;
             this.text = text; this.generation = generation;
+            this.kind = kind; this.ignoreMute = ignoreMute; this.ignoreHardMute = ignoreHardMute; this.manager = manager;
             file = new File(context.getCacheDir(), id + ".wav");
         }
     }

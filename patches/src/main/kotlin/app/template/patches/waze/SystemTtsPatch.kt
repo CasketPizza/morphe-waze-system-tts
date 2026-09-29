@@ -39,5 +39,34 @@ val systemTtsPatch = bytecodePatch(
             nop
         """)
         StopPlayerFingerprint.method.addInstructions(0, "invoke-static {}, $BRIDGE->cancel()V")
+        PlayerReadyFingerprint.method.addInstructions(0,
+            "invoke-static/range {p0 .. p0}, $BRIDGE->attachPlayer(Ljava/lang/Object;)V")
+        FilePlayFingerprint.method.addInstructions(0, """
+            invoke-static/range {p0 .. p5}, $BRIDGE->playFile(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ZZLjava/lang/Object;)Z
+            move-result v0
+            if-eqz v0, :original_file
+            return-void
+            :original_file
+            nop
+        """)
+        NativeDownloadFingerprint.method.addInstructions(0,
+            "invoke-static {p1, p3, p3}, $BRIDGE->remember(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")
+        NativePlayFingerprint.method.addInstructions(0, """
+            invoke-static {p0, p1, p2}, $BRIDGE->playCached(Ljava/lang/Object;Ljava/lang/String;Z)Z
+            move-result v0
+            if-eqz v0, :original_cached
+            return-void
+            :original_cached
+            nop
+        """)
+        NativeCacheFingerprint.method.addInstructions(0, """
+            invoke-static {p1}, $BRIDGE->needsText(Ljava/lang/String;)Z
+            move-result v0
+            if-eqz v0, :original_cache
+            const/4 v0, 0x0
+            return v0
+            :original_cache
+            nop
+        """)
     }
 }

@@ -8,7 +8,9 @@ The patch captures online navigation chunks, synthesises their text using Androi
 
 The Settings button also offers **Test / status** and a shortcut to Android TTS settings. Restart Waze after changing the system engine or voice. The test button checks system speech; testing a real route is separately required to verify navigation interception.
 
-This targets online navigation chunks in 5.24.5.0. Offline prompts, voice previews and other audio paths may still use Waze's voice. Synthesis errors or missing text fall back to original playback and are reported in the status dialog. Android Auto and physical-device navigation require device testing; compilation alone does not verify them.
+The setting also covers file-based spoken prompts and cached TTS. The patch captures free-text requests and uses the APK's built-in phrase table for recognised prompt filenames, including speed bumps, school zones, police and railway crossings. That bundled fallback table is English; server-provided text retains its original language. Sound effects and phrases without identifiable text retain original playback. Unfilled templates are never spoken literally.
+
+Cached TTS without a known text mapping is requested again once per process as needed, so that text can be captured. Synthesis errors fall back to original playback. The status dialog shows the last unmatched filename for troubleshooting; this can also be a normal beep or click. Device testing remains necessary to establish coverage of every alert; compilation alone cannot prove it.
 
 ## Build
 
