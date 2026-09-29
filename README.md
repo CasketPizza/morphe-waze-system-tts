@@ -31,7 +31,7 @@ Use the generated `.mpp` with Morphe Desktop or add this repository as a Morphe 
 The output is a repackaged APK and must be installed as a separate signed build unless the same signing key is already used for the installed Waze package.
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.1](https://github.com/CasketPizza/morphe-waze-system-tts/releases/tag/v1.0.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+> **[v1.1.0](https://github.com/CasketPizza/morphe-waze-system-tts/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
 <details open>
 <summary>📦 Waze&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -43,7 +43,7 @@ The output is a repackaged APK and must be installed as a separate signed build 
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Use Android system TTS for navigation](#use-android-system-tts-for-navigation) | Makes Waze navigation use the Android default Text-to-Speech engine, including street names, when TTS navigation is selected. |  |
+| [Use Android system TTS for navigation](#use-android-system-tts-for-navigation) | Adds a system TTS control to Settings and replaces online navigation chunks using Android's default engine. |  |
 
 </details>
 

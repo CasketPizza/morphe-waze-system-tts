@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.0.1...v1.1.0) (2026-09-29)
+
+### ✨ New Features
+
+* add system TTS settings and intercept navigation chunks ([9cfd2c1](https://github.com/CasketPizza/morphe-waze-system-tts/commit/9cfd2c1778b8e2a1871f5250720a516d8b224661))
+
 ## [1.0.1](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.0.0...v1.0.1) (2026-09-29)
 
 ### 🐛 Bug Fixes

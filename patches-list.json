@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "patches": [
     {
       "name": "Use Android system TTS for navigation",
-      "description": "Makes Waze navigation use the Android default Text-to-Speech engine, including street names, when TTS navigation is selected.",
+      "description": "Adds a system TTS control to Settings and replaces online navigation chunks using Android's default engine.",
       "default": true,
       "category": null,
       "dependencies": [],
