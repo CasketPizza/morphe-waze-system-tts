@@ -18,6 +18,8 @@ gradlew.bat buildAndroid
 
 The resulting Morphe bundle is written to `patches/build/libs/`.
 
+Commits using the `fix:` or `feat:` Conventional Commit prefixes trigger the GitHub Actions release workflow. A successful release publishes the `.mpp` bundle on the repository's Releases page.
+
 ## Apply
 
 Use the generated `.mpp` with Morphe Desktop or add this repository as a Morphe patch source. Select `Use Android system TTS for navigation`, then patch the supplied APKM.
