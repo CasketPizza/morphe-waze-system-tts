@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.CheckBox;
+import android.widget.TextView;
+import android.widget.ScrollView;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
@@ -76,13 +79,7 @@ public final class SystemTtsBridge {
         synchronized (TEXT) { text = TEXT.get(path); }
         if (text == null) {
             try {
-                if (promptCatalog == null) {
-                    try (InputStreamReader reader = new InputStreamReader(
-                            context.getAssets().open("res/key_value_tts_strings.txt"), StandardCharsets.UTF_8)) {
-                        promptCatalog = new PromptTextCatalog(reader);
-                    }
-                }
-                text = promptCatalog.resolve(path);
+                text = catalog().resolve(path);
             } catch (Exception error) { Log.e("WazeSystemTTS", "Cannot load prompt phrases", error); }
         }
         if (text == null) {
@@ -116,7 +113,12 @@ public final class SystemTtsBridge {
     private static boolean enqueue(Object player, String url, String key, Object callback, String text,
             int kind, boolean ignoreMute, boolean ignoreHardMute, Object manager) {
         MAIN.post(() -> {
-            Pending pending = new Pending(player, url, key, callback, text, generation,
+            String spoken = text;
+            try {
+                String alert = catalog().alertKey(url, text);
+                if (alert != null) spoken = context.getSharedPreferences("system_tts_alerts", 0).getString(alert, text);
+            } catch (Exception error) { Log.e("WazeSystemTTS", "Cannot customize alert", error); }
+            Pending pending = new Pending(player, url, key, callback, spoken, generation,
                     kind, ignoreMute, ignoreHardMute, manager);
             JOBS.put(pending.id, pending);
             ensureEngine();
@@ -239,29 +241,67 @@ public final class SystemTtsBridge {
         });
     }
 
+    private static synchronized PromptTextCatalog catalog() throws java.io.IOException {
+        if (promptCatalog == null) {
+            try (InputStreamReader reader = new InputStreamReader(
+                    context.getAssets().open("res/key_value_tts_strings.txt"), StandardCharsets.UTF_8)) {
+                promptCatalog = new PromptTextCatalog(reader);
+            }
+        }
+        return promptCatalog;
+    }
+
     private static void showSettings(Activity activity) {
-        new AlertDialog.Builder(activity)
-                    .setTitle("Android system TTS")
-                    .setMultiChoiceItems(new String[]{"Use system voice for navigation and alerts"}, new boolean[]{enabled()},
-                            (dialog, which, checked) -> {
-                                context.getSharedPreferences("system_tts", 0).edit().putBoolean("enabled", checked).apply();
-                        cancel();
-                            })
-                    .setPositiveButton("Test / status", (dialog, which) -> {
+        LinearLayout content = new LinearLayout(activity);
+        content.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int) (20 * activity.getResources().getDisplayMetrics().density);
+        content.setPadding(padding, padding, padding, padding);
+        TextView instructions = new TextView(activity);
+        instructions.setText("Required: in Voice & sound → Waze voice, select a voice marked “Including street names”. Keep that voice selected so Waze supplies full navigation text. Android system TTS replaces its spoken audio.");
+        content.addView(instructions);
+        CheckBox toggle = new CheckBox(activity);
+        toggle.setText("Use system voice for navigation and alerts");
+        toggle.setChecked(enabled());
+        toggle.setOnCheckedChangeListener((button, checked) -> {
+            context.getSharedPreferences("system_tts", 0).edit().putBoolean("enabled", checked).apply();
+            cancel();
+        });
+        content.addView(toggle);
+        Button customize = new Button(activity);
+        customize.setText("Customize alert text");
+        customize.setOnClickListener(v -> {
+            try { AlertTextSettings.show(activity, catalog()); }
+            catch (Exception error) {
+                new AlertDialog.Builder(activity).setMessage("Unable to load Waze alert phrases.")
+                        .setPositiveButton("OK", null).show();
+            }
+        });
+        content.addView(customize);
+        Button test = new Button(activity);
+        test.setText("Test / status");
+        test.setOnClickListener(v -> {
                         ensureEngine();
                         MAIN.postDelayed(() -> {
+                            if (activity.isFinishing() || activity.isDestroyed()) return;
                             if (ready) engine.speak("In two hundred metres, turn left onto George Street.",
                                     TextToSpeech.QUEUE_FLUSH, null, "test");
                             new AlertDialog.Builder(activity).setTitle("System TTS status")
                                     .setMessage(status + "\nLast unmatched file (may be a sound effect): " + lastUnmatched)
                                     .setPositiveButton("OK", null).show();
                         }, 1500);
-                    })
-                    .setNeutralButton("Android TTS settings", (dialog, which) -> {
+                    });
+        content.addView(test);
+        Button settings = new Button(activity);
+        settings.setText("Android TTS settings");
+        settings.setOnClickListener(v -> {
                         try { activity.startActivity(new Intent("com.android.settings.TTS_SETTINGS")); }
                         catch (Exception error) { status = "Open Text-to-speech in Android settings manually"; }
-                    })
-                    .setNegativeButton("Close", null).show();
+                    });
+        content.addView(settings);
+        ScrollView scroll = new ScrollView(activity);
+        scroll.addView(content);
+        new AlertDialog.Builder(activity).setTitle("Android system TTS").setView(scroll)
+                .setNegativeButton("Close", null).show();
     }
 
     private static final class Pending {

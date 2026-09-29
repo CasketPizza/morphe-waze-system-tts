@@ -10,6 +10,9 @@ import java.util.Map;
 /** Exact prompt-name matches only: arbitrary sound filenames are never spoken. */
 public final class PromptTextCatalog {
     private final Map<String, String> phrases = new HashMap<>();
+    private final Map<String, String> alertDefaults = new java.util.TreeMap<>();
+    private final Map<String, String> alertNames = new HashMap<>();
+    private final Map<String, String> alertTexts = new HashMap<>();
 
     public PromptTextCatalog(Reader source) throws IOException {
         BufferedReader reader = new BufferedReader(source);
@@ -23,6 +26,17 @@ public final class PromptTextCatalog {
             if (value.isEmpty() || value.contains("%") || value.contains("<")) continue;
             phrases.put(normalize(key), value);
             if (key.startsWith("TTS_APPTEXT_")) phrases.put(normalize(key.substring(12)), value);
+            if (key.startsWith("TTS_")) {
+                String identity = value.toLowerCase(Locale.ROOT);
+                String canonical = alertTexts.get(identity);
+                if (canonical == null) {
+                    canonical = key;
+                    alertTexts.put(identity, canonical);
+                    alertDefaults.put(canonical, value);
+                }
+                alertNames.put(normalize(key), canonical);
+                if (key.startsWith("TTS_APPTEXT_")) alertNames.put(normalize(key.substring(12)), canonical);
+            }
         }
         alias("TurnLeft", "NAV_TTS_TEXT_TURN_LEFT");
         alias("TurnRight", "NAV_TTS_TEXT_TURN_RIGHT");
@@ -49,12 +63,26 @@ public final class PromptTextCatalog {
     }
 
     public String resolve(String file) {
+        return phrases.get(fileName(file));
+    }
+
+    public Map<String, String> alerts() {
+        return java.util.Collections.unmodifiableMap(alertDefaults);
+    }
+
+    public String alertKey(String file, String text) {
+        String key = alertNames.get(fileName(file));
+        if (key != null) return key;
+        return text == null ? null : alertTexts.get(text.trim().toLowerCase(Locale.ROOT));
+    }
+
+    private static String fileName(String file) {
         if (file == null) return null;
         String name = file.replace('\\', '/');
         name = name.substring(name.lastIndexOf('/') + 1);
         int extension = name.lastIndexOf('.');
         if (extension >= 0) name = name.substring(0, extension);
-        return phrases.get(normalize(name));
+        return normalize(name);
     }
 
     private static String normalize(String value) {

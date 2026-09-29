@@ -21,7 +21,17 @@ public final class PromptTextCatalogTest {
                     "TTS_APPTEXT_ESTIMATED_TIME_IN_TRAFFIC", "TTS_APPTEXT_INSIGHTS_APPROACH_SEGMENT_PS_PS", "unknown.mp3"}) {
                 check(catalog.resolve(sound), null);
             }
-            System.out.println("PASS: 14 prompt, template and non-speech checks against original APK");
+            String speedBump = catalog.alertKey("ApproachPermanentHazardSpeedBump.mp3", null);
+            check(catalog.alerts().get(speedBump), "Speed bumps ahead");
+            check(catalog.alertKey("cache-hash", "  Speed bumps ahead  "), speedBump);
+            check(catalog.alertKey("TurnLeft.mp3", "turn left"), null);
+            check(catalog.alertKey("beep.mp3", null), null);
+            PromptTextCatalog duplicates = new PromptTextCatalog(new java.io.StringReader(
+                    "TTS_APPTEXT_FIRST=Same alert\nTTS_APPTEXT_SECOND=Same alert\nTTS_TEMPLATE=%s ahead\n"));
+            check(duplicates.alertKey("First.mp3", null), duplicates.alertKey("Second.mp3", null));
+            check(duplicates.alertKey(null, "same alert"), duplicates.alertKey("Second.mp3", null));
+            if (duplicates.alerts().size() != 1) throw new AssertionError("Duplicate/template editor entries");
+            System.out.println("PASS: prompt resolution, alert identities, duplicate aliases and template exclusions");
         }
     }
 

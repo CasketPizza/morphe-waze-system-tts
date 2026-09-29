@@ -6,7 +6,9 @@ It adds an **Android system TTS** button to Waze's Settings screen. Enable **Use
 
 The patch captures online navigation chunks, synthesises their text using Android's default `TextToSpeech` engine, and gives the resulting local audio to Waze's own player. This retains its mute checks, audio routing and completion callbacks. Street names are included when supplied in the chunk text. Keep a Waze voice with street-name support selected to request the corresponding navigation instructions.
 
-The Settings button also offers **Test / status** and a shortcut to Android TTS settings. Restart Waze after changing the system engine or voice. The test button checks system speech; testing a real route is separately required to verify navigation interception.
+Select **Voice & sound → Waze voice** and choose a voice marked **Including street names**. This requirement is also shown inside the system TTS settings window.
+
+The Settings button also offers **Customize alert text**, **Test / status** and a shortcut to Android TTS settings. The searchable alert editor saves custom wording for recognised static phrases and provides **Reset to default** for each phrase. Identical default phrases share one override. Overrides apply to subsequent matching file, online and cached speech requests; already queued speech is unchanged. Dynamic templates, unrecognised audio and sound effects are not editable. Overrides are stored locally and require system TTS to be enabled. Restart Waze after changing the system engine or voice. The test button checks system speech; testing a real route is separately required to verify navigation interception.
 
 The setting also covers file-based spoken prompts and cached TTS. The patch captures free-text requests and uses the APK's built-in phrase table for recognised prompt filenames, including speed bumps, school zones, police and railway crossings. That bundled fallback table is English; server-provided text retains its original language. Sound effects and phrases without identifiable text retain original playback. Unfilled templates are never spoken literally.
 
