@@ -2,9 +2,13 @@
 
 This patch targets Waze `5.24.5.0` (version code `1030732`, package `com.waze`).
 
-It replaces Waze's server-generated navigation TTS playback with Android's default `TextToSpeech` engine. The engine and voice are whatever Android has selected in system Text-to-speech settings. Street names remain in the text passed to the engine.
+It adds an **Android system TTS** button to Waze's Settings screen. Enable **Use system voice for navigation** there. The setting is off by default; disabling it restores Waze playback.
 
-The patch also covers Waze's legacy direct TTS player path.
+The patch captures online navigation chunks, synthesises their text using Android's default `TextToSpeech` engine, and gives the resulting local audio to Waze's own player. This retains its mute checks, audio routing and completion callbacks. Street names are included when supplied in the chunk text. Keep a Waze voice with street-name support selected to request the corresponding navigation instructions.
+
+The Settings button also offers **Test / status** and a shortcut to Android TTS settings. Restart Waze after changing the system engine or voice. The test button checks system speech; testing a real route is separately required to verify navigation interception.
+
+This targets online navigation chunks in 5.24.5.0. Offline prompts, voice previews and other audio paths may still use Waze's voice. Synthesis errors or missing text fall back to original playback and are reported in the status dialog. Android Auto and physical-device navigation require device testing; compilation alone does not verify them.
 
 ## Build
 

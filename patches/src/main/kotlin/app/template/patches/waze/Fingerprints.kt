@@ -1,36 +1,22 @@
 package app.waze.systemtts.patches.waze
 
 import app.morphe.patcher.Fingerprint
-import com.android.tools.smali.dexlib2.AccessFlags
 
-object TtsDownloadFingerprint : Fingerprint(
-    definingClass = "Lcom/waze/sound/TtsNativeManager;",
-    name = "downloadTtsFromVoiceServer",
-    accessFlags = listOf(AccessFlags.PUBLIC),
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;", "L", "Ljava/lang/String;")
+object ChunkConstructorFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/sound/ai;", name = "<init>",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;")
 )
-
-object TtsPlayFingerprint : Fingerprint(
-    definingClass = "Lcom/waze/sound/TtsNativeManager;",
-    name = "play",
-    accessFlags = listOf(AccessFlags.PUBLIC),
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;", "Z")
+object PlayerConstructorFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/sound/fb;", name = "<init>"
 )
-
-object LegacyTtsPlayFingerprint : Fingerprint(
-    definingClass = "Lcom/waze/sound/WazeTtsPlayerNativeManager;",
-    name = "play",
-    accessFlags = listOf(AccessFlags.PUBLIC),
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;", "Z")
+object UrlPlayFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/sound/fb;", name = "g", returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Lh/g/a/a;")
 )
-
-object LegacyTtsActualFingerprint : Fingerprint(
-    definingClass = "Lcom/waze/sound/lf;",
-    name = "playActual",
-    accessFlags = listOf(AccessFlags.PUBLIC),
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;", "Z", "Lh/g/a/l;")
+object StopPlayerFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/sound/fb;", name = "e", returnType = "V", parameters = emptyList()
+)
+object SettingsCreateFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/settings/SettingsMainActivity;", name = "onCreate",
+    returnType = "V", parameters = listOf("Landroid/os/Bundle;")
 )
