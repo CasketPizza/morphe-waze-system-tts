@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.2...v1.2.0) (2026-09-29)
+
+### ✨ New Features
+
+* add customizable alert speech and voice selection guidance ([63de827](https://github.com/CasketPizza/morphe-waze-system-tts/commit/63de827ad902a322aecf1f4a90c1c6a8a1d4cb48))
+
 ## [1.1.2](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.1...v1.1.2) (2026-09-29)
 
 ### 🐛 Bug Fixes

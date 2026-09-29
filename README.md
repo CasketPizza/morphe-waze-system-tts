@@ -35,7 +35,7 @@ Use the generated `.mpp` with Morphe Desktop or add this repository as a Morphe 
 The output is a repackaged APK and must be installed as a separate signed build unless the same signing key is already used for the installed Waze package.
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.2](https://github.com/CasketPizza/morphe-waze-system-tts/releases/tag/v1.1.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+> **[v1.2.0](https://github.com/CasketPizza/morphe-waze-system-tts/releases/tag/v1.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
 <details open>
 <summary>📦 Waze&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
