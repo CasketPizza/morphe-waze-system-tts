@@ -28,8 +28,8 @@ val systemTtsPatch = bytecodePatch(
         // These parameters are reused as other types later in the original methods.
         PlayerConstructorFingerprint.method.addInstructions(0,
             "invoke-static/range {p1 .. p1}, $BRIDGE->initialize(Landroid/content/Context;)V")
-        SettingsCreateFingerprint.method.addInstructions(0,
-            "invoke-static/range {p0 .. p0}, $BRIDGE->addSettings(Landroid/app/Activity;)V")
+        SettingsRowsFingerprint.method.addInstructions(0,
+            "invoke-static/range {p0 .. p0}, $BRIDGE->addSettingsPage(Ljava/lang/Object;)V")
         UrlPlayFingerprint.method.addInstructions(0, """
             invoke-static {p0, p1, p2, p3}, $BRIDGE->play(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Z
             move-result v0

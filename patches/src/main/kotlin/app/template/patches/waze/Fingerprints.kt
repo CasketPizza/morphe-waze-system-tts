@@ -16,7 +16,7 @@ object UrlPlayFingerprint : Fingerprint(
 object StopPlayerFingerprint : Fingerprint(
     definingClass = "Lcom/waze/sound/fb;", name = "e", returnType = "V", parameters = emptyList()
 )
-object SettingsCreateFingerprint : Fingerprint(
-    definingClass = "Lcom/waze/settings/SettingsMainActivity;", name = "onCreate",
-    returnType = "V", parameters = listOf("Landroid/os/Bundle;")
+object SettingsRowsFingerprint : Fingerprint(
+    definingClass = "Lcom/waze/settings/dc;", name = "x",
+    returnType = "V", parameters = emptyList()
 )

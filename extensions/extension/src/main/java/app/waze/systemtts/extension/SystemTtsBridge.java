@@ -6,13 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -130,21 +131,41 @@ public final class SystemTtsBridge {
         });
     }
 
-    public static void addSettings(Activity activity) {
-        // Posted from onCreate entry: wait for Waze to install its content view.
+    public static void addSettingsPage(Object fragment) {
+        // The real SettingsPageFragment rebuilds its rows in x(). Run after that
+        // rebuild, and bind the button to its view rather than the host activity.
         MAIN.post(() -> {
-            if (activity.isFinishing() || activity.isDestroyed()) return;
-            initialize(activity);
-            FrameLayout content = activity.findViewById(android.R.id.content);
-            if (content == null || content.findViewWithTag("system_tts_button") != null) return;
-            Button button = new Button(activity);
-            button.setTag("system_tts_button"); button.setText("Android system TTS");
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Gravity.BOTTOM | Gravity.END);
-            params.bottomMargin = (int) (32 * activity.getResources().getDisplayMetrics().density);
-            content.addView(button, params);
-            button.setOnClickListener(v -> new AlertDialog.Builder(activity)
+            try {
+                Bundle args = (Bundle) fragment.getClass().getMethod("getArguments").invoke(fragment);
+                String page = args == null ? "" : args.getString("model", "");
+                if (!page.equals("settings_main") && !page.equals("settings_main.voice")) return;
+                View root = (View) fragment.getClass().getMethod("getView").invoke(fragment);
+                Activity activity = (Activity) fragment.getClass().getMethod("getActivity").invoke(fragment);
+                if (root == null || activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+                initialize(activity);
+                int id = root.getResources().getIdentifier("settingsLinearLayout", "id", activity.getPackageName());
+                View target = root.findViewById(id);
+                if (!(target instanceof LinearLayout)) {
+                    Log.e("WazeSystemTTS", "Settings row container not found");
+                    return;
+                }
+                LinearLayout content = (LinearLayout) target;
+                if (content.findViewWithTag("system_tts_button") != null) return;
+                Button button = new Button(activity);
+                button.setTag("system_tts_button");
+                button.setText("Android system TTS");
+                button.setAllCaps(false);
+                content.addView(button, Math.min(1, content.getChildCount()),
+                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                button.setOnClickListener(v -> showSettings(activity));
+            } catch (Exception error) {
+                Log.e("WazeSystemTTS", "Cannot add settings row", error);
+            }
+        });
+    }
+
+    private static void showSettings(Activity activity) {
+        new AlertDialog.Builder(activity)
                     .setTitle("Android system TTS")
                     .setMultiChoiceItems(new String[]{"Use system voice for navigation"}, new boolean[]{enabled()},
                             (dialog, which, checked) -> {
@@ -164,8 +185,7 @@ public final class SystemTtsBridge {
                         try { activity.startActivity(new Intent("com.android.settings.TTS_SETTINGS")); }
                         catch (Exception error) { status = "Open Text-to-speech in Android settings manually"; }
                     })
-                    .setNegativeButton("Close", null).show());
-        });
+                    .setNegativeButton("Close", null).show();
     }
 
     private static final class Pending {
