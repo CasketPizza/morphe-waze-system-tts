@@ -25,3 +25,6 @@ Commits using the `fix:` or `feat:` Conventional Commit prefixes trigger the Git
 Use the generated `.mpp` with Morphe Desktop or add this repository as a Morphe patch source. Select `Use Android system TTS for navigation`, then patch the supplied APKM.
 
 The output is a repackaged APK and must be installed as a separate signed build unless the same signing key is already used for the installed Waze package.
+
+<!-- PATCHES_START EXPANDED -->
+<!-- PATCHES_END -->
