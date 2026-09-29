@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.0...v1.1.1) (2026-09-29)
+
+### 🐛 Bug Fixes
+
+* add TTS row to shared settings page ([e75cfe3](https://github.com/CasketPizza/morphe-waze-system-tts/commit/e75cfe30e18f97d82a4a5c3114ca72f631e23b82))
+
 ## [1.1.0](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.0.1...v1.1.0) (2026-09-29)
 
 ### ✨ New Features
