@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.1...v1.1.2) (2026-09-29)
+
+### 🐛 Bug Fixes
+
+* route spoken alerts and cached TTS through system voice ([0aa8e25](https://github.com/CasketPizza/morphe-waze-system-tts/commit/0aa8e259d47583e3b2a8e9088d5cf0dc6f005389))
+
 ## [1.1.1](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.0...v1.1.1) (2026-09-29)
 
 ### 🐛 Bug Fixes

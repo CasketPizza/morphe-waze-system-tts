@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-29T16:18:39",
-  "description": "## [1.1.1](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.0...v1.1.1) (2026-09-29)\n\n### 🐛 Bug Fixes\n\n* add TTS row to shared settings page ([e75cfe3](https://github.com/CasketPizza/morphe-waze-system-tts/commit/e75cfe30e18f97d82a4a5c3114ca72f631e23b82))",
-  "download_url": "https://github.com/CasketPizza/morphe-waze-system-tts/releases/download/v1.1.1/patches-1.1.1.mpp",
+  "created_at": "2026-09-29T18:13:10",
+  "description": "## [1.1.2](https://github.com/CasketPizza/morphe-waze-system-tts/compare/v1.1.1...v1.1.2) (2026-09-29)\n\n### 🐛 Bug Fixes\n\n* route spoken alerts and cached TTS through system voice ([0aa8e25](https://github.com/CasketPizza/morphe-waze-system-tts/commit/0aa8e259d47583e3b2a8e9088d5cf0dc6f005389))",
+  "download_url": "https://github.com/CasketPizza/morphe-waze-system-tts/releases/download/v1.1.2/patches-1.1.2.mpp",
   "signature_download_url": "",
-  "version": "1.1.1"
+  "version": "1.1.2"
 }
